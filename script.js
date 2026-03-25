@@ -1,6 +1,8 @@
 // Main JavaScript file
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Document ready!');
+
+    initCookieConsent();
     
     // Mobile menu toggle
     initMobileMenu();
@@ -17,6 +19,130 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Gallery filter functionality
     initGalleryFilter();
 });
+
+function initCookieConsent() {
+    if (!window.mvMontConsent) return;
+
+    const storedConsent = window.mvMontConsent.getStoredConsent();
+    const banner = createCookieBanner(storedConsent);
+    const details = banner.querySelector('[data-cookie-details]');
+    const analyticsInput = banner.querySelector('[data-cookie-analytics]');
+    const marketingInput = banner.querySelector('[data-cookie-marketing]');
+
+    const showBanner = (expandDetails = false) => {
+        if (storedConsent && !expandDetails) {
+            syncCookieFormState();
+        }
+
+        banner.hidden = false;
+        details.hidden = !expandDetails;
+    };
+
+    const hideBanner = () => {
+        banner.hidden = true;
+    };
+
+    const syncCookieFormState = (consentState = window.mvMontConsent.getStoredConsent()) => {
+        analyticsInput.checked = Boolean(consentState && consentState.analytics);
+        marketingInput.checked = Boolean(consentState && consentState.marketing);
+    };
+
+    const saveConsent = (preferences) => {
+        window.mvMontConsent.applyConsent(preferences);
+        syncCookieFormState(window.mvMontConsent.normalizePreferences(preferences));
+        hideBanner();
+    };
+
+    banner.querySelector('[data-cookie-accept-all]').addEventListener('click', () => {
+        saveConsent({ analytics: true, marketing: true });
+    });
+
+    banner.querySelector('[data-cookie-reject-all]').addEventListener('click', () => {
+        saveConsent({ analytics: false, marketing: false });
+    });
+
+    banner.querySelector('[data-cookie-toggle-details]').addEventListener('click', () => {
+        details.hidden = !details.hidden;
+    });
+
+    banner.querySelector('[data-cookie-save-preferences]').addEventListener('click', () => {
+        saveConsent({
+            analytics: analyticsInput.checked,
+            marketing: marketingInput.checked
+        });
+    });
+
+    document.querySelectorAll('[data-open-cookie-settings]').forEach((trigger) => {
+        trigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            syncCookieFormState();
+            showBanner(true);
+        });
+    });
+
+    syncCookieFormState();
+
+    if (!storedConsent) {
+        showBanner(false);
+    }
+}
+
+function createCookieBanner(storedConsent) {
+    const existingBanner = document.querySelector('[data-cookie-banner]');
+    if (existingBanner) return existingBanner;
+
+    const banner = document.createElement('section');
+    banner.className = 'cookie-consent';
+    banner.setAttribute('data-cookie-banner', '');
+    banner.hidden = true;
+    banner.innerHTML = `
+        <div class="cookie-consent__panel" role="dialog" aria-modal="true" aria-labelledby="cookie-consent-title">
+            <div class="cookie-consent__header">
+                <p class="cookie-consent__eyebrow">Ochrana sukromia</p>
+                <h2 id="cookie-consent-title" class="cookie-consent__title">Nastavenie cookies a Google Consent Mode v2</h2>
+            </div>
+            <p class="cookie-consent__text">
+                Pouzivame nevyhnutne cookies pre spravne fungovanie webu. Analyticke a marketingove cookies zapneme az po vasom suhlase.
+                Google Consent Mode v2 nam zaroven umoznuje pri odmietnuti cookies pracovat len s anonymizovanymi signalmi, aby sme respektovali vase sukromie a plnili poziadavky GDPR.
+            </p>
+            <div class="cookie-consent__actions">
+                <button type="button" class="cookie-consent__button cookie-consent__button--primary" data-cookie-accept-all>Prijat vsetko</button>
+                <button type="button" class="cookie-consent__button cookie-consent__button--secondary" data-cookie-reject-all>Odmietnut nepovinne</button>
+                <button type="button" class="cookie-consent__button cookie-consent__button--ghost" data-cookie-toggle-details>Prisposobit</button>
+            </div>
+            <div class="cookie-consent__details" data-cookie-details hidden>
+                <div class="cookie-consent__option">
+                    <div>
+                        <h3>Nevyhnutne</h3>
+                        <p>Tieto uloziska su potrebne pre bezpecnost, funkcnost formularov a zakladne fungovanie stranky.</p>
+                    </div>
+                    <span class="cookie-consent__badge">Vzdy aktivne</span>
+                </div>
+                <label class="cookie-consent__option cookie-consent__option--toggle">
+                    <div>
+                        <h3>Analyticke</h3>
+                        <p>Pomahaju nam merat navstevnost a vykonnost webu v agregovanej podobe.</p>
+                    </div>
+                    <input type="checkbox" data-cookie-analytics ${storedConsent && storedConsent.analytics ? 'checked' : ''} />
+                </label>
+                <label class="cookie-consent__option cookie-consent__option--toggle">
+                    <div>
+                        <h3>Marketingove</h3>
+                        <p>Umoznuju meranie reklamnych interakcii a pracu s Google reklamnymi signalmi len po udeleni suhlasu.</p>
+                    </div>
+                    <input type="checkbox" data-cookie-marketing ${storedConsent && storedConsent.marketing ? 'checked' : ''} />
+                </label>
+                <div class="cookie-consent__footer">
+                    <a href="/cookies.html">Viac informacii o cookies a ochrane sukromia</a>
+                    <button type="button" class="cookie-consent__button cookie-consent__button--primary" data-cookie-save-preferences>Ulozit nastavenie</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(banner);
+    return banner;
+}
 
 // Mobile Menu Functionality
 function initMobileMenu() {

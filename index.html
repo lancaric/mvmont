@@ -1,15 +1,7 @@
 <!DOCTYPE html>
 <html class="h-full" lang="sk">
   <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-V99HLJGFBD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-V99HLJGFBD');
-</script>
+    <script src="/consent.js"></script>
     <meta charset="UTF-8" />
     <title>Presklenia a tienenie | MV-MONT Poprad</title>
     <link rel="shortcut icon" href="icon.jpg" type="image/x-icon">
@@ -1467,6 +1459,19 @@
                     </p>
                     <div class="flex items-center space-x-6">
                       <a
+                        href="/cookies.html"
+                        class="text-[var(--light-background-color)] hover:text-white text-sm transition-colors duration-300"
+                      >
+                        Cookies a ochrana sukromia
+                      </a>
+                      <button
+                        type="button"
+                        data-open-cookie-settings
+                        class="text-[var(--light-background-color)] hover:text-white text-sm transition-colors duration-300"
+                      >
+                        Nastavit cookies
+                      </button>
+                      <a
                         href="/kontakt.html"
                         class="text-[var(--light-background-color)] hover:text-white text-sm transition-colors duration-300"
                       >
@@ -1483,6 +1488,8 @@
     </div>
 
     <!-- Jednoduchý skript na mobilné menu (nahrádza pôvodný /embed/main.umd.js) -->
+    <script src="/script.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const toggleBtn = document.querySelector(
