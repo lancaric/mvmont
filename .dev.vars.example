@@ -1,0 +1,5 @@
+# Copy to .dev.vars and set a long random local token. Never commit real secrets.
+ADMIN_TOKEN=
+RESEND_API_KEY=
+CONTACT_TO=
+CONTACT_FROM=

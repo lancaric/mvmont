@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mvmont",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-11",
+  "triggers": { "crons": ["17 3 * * *"] },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": ["/", "/api/*", "/uploads/*"]
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "mvmont-db",
+    // MANUAL STEP: replace with the database_id from wrangler d1 create.
+    "database_id": "00000000-0000-0000-0000-000000000000",
+    "migrations_dir": "migrations"
+  }],
+  "r2_buckets": [{ "binding": "GALLERY_BUCKET", "bucket_name": "mvmont-gallery" }],
+  "vars": { "COMPANY_NAME": "MV-MONT", "CONTACT_TO": "", "CONTACT_FROM": "" }
+}

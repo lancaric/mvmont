@@ -267,13 +267,15 @@ async function submitContactForm(payload) {
         if (!response.ok) {
             if (errorMessage) {
                 const messageText = data?.message || 'Nastala chyba pri odosielaní. Skúste to prosím znova.';
-                errorMessage.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${messageText}`;
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${escapeHtml(messageText)}`;
                 errorMessage.style.display = 'block';
             }
             if (data?.details) {
                 Object.entries(data.details).forEach(([field, msg]) => {
                     const fieldInput = document.getElementById(field);
-                    validateField(fieldInput, `${field}-error`, msg);
+                    const errorElement = document.getElementById(`${field}-error`);
+                    fieldInput?.classList.add('error');
+                    if (errorElement) { errorElement.textContent = msg; errorElement.classList.add('show'); }
                 });
             }
             return;
@@ -281,7 +283,7 @@ async function submitContactForm(payload) {
 
         if (successMessage) {
             const text = data?.message || 'Ďakujeme za vašu správu! Ozveme sa vám čoskoro.';
-            successMessage.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${text}`;
+            successMessage.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${escapeHtml(text)}`;
             successMessage.classList.add('show');
         }
 
@@ -391,7 +393,7 @@ function renderGalleryItem(item, index) {
     const title = escapeHtml(item.title || 'Ukážka');
     const description = escapeHtml(item.description || '');
     const category = escapeHtml(item.category || 'other');
-    const imageUrl = item.imageUrl || '';
+    const imageUrl = escapeHtml(item.imageUrl || '');
 
     return `
         <div class="gallery-item" data-category="${category}" data-index="${index}">
@@ -407,7 +409,7 @@ function renderGalleryItem(item, index) {
 }
 
 function escapeHtml(text) {
-    return (text || '').replace(/[&<>"']/g, (char) => {
+    return String(text || '').replace(/[&<>"']/g, (char) => {
         const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
         return map[char] || char;
     });

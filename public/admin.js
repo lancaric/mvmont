@@ -45,7 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const payload = await buildPayloadFromForm();
+    let payload;
+    try { payload = await buildPayloadFromForm(); }
+    catch { setFormMessage('Obrázok sa nepodarilo načítať.', 'text-red-600'); return; }
     if (!payload) return;
 
     const endpoint = currentEditId ? `/api/gallery/${currentEditId}` : '/api/gallery';
@@ -77,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     galleryList.innerHTML = '<p class="text-sm text-slate-500">Načítavam...</p>';
     try {
       const response = await fetch('/api/gallery');
+      if (!response.ok) throw new Error('Galéria nie je dostupná');
       const data = await response.json();
       const items = data?.items || [];
       renderGallery(items);
@@ -96,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(
         (item) => `
         <article class="border border-slate-200 rounded-xl bg-slate-50 overflow-hidden shadow-sm flex flex-col">
-          <img src="${item.imageUrl}" alt="${escapeHtml(item.title)}" class="h-48 w-full object-cover bg-slate-100" />
+          <img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.title)}" class="h-48 w-full object-cover bg-slate-100" />
           <div class="p-4 flex-1 flex flex-col gap-2">
             <div class="flex items-start justify-between gap-2">
               <div>
@@ -110,13 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="mt-auto flex gap-2 pt-2">
               <button
                 class="flex-1 px-3 py-2 rounded-lg bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800"
-                data-edit="${item.id}"
+                data-edit="${escapeHtml(item.id)}"
               >
                 Upraviť
               </button>
               <button
                 class="px-3 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
-                data-delete="${item.id}"
+                data-delete="${escapeHtml(item.id)}"
               >
                 Odstrániť
               </button>
@@ -193,6 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = { title, description, category };
 
     if (imageFile) {
+      if (imageFile.size > 3 * 1024 * 1024 || !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(imageFile.type)) {
+        setFormMessage('Nahrajte PNG, JPG, WEBP alebo GIF s veľkosťou najviac 3 MiB.', 'text-red-600');
+        return null;
+      }
       payload.imageData = await fileToBase64(imageFile);
       payload.imageName = imageFile.name;
     } else if (imageUrl) {
@@ -227,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function escapeHtml(text = '') {
-    return text.replace(/[&<>"']/g, (char) => {
+    return String(text).replace(/[&<>"']/g, (char) => {
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
       return map[char] || char;
     });
